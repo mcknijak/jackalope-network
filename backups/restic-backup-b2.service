@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly restic backup to Backblaze B2
+After=network-online.target docker.service
+Wants=docker.service
+
+[Service]
+Type=oneshot
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+ExecStart=/usr/local/sbin/restic-backup.sh b2

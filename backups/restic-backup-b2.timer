@@ -1,0 +1,10 @@
+[Unit]
+Description=Run restic-backup-b2 weekly
+
+[Timer]
+OnCalendar=Sun *-*-* 04:30:00
+Persistent=true
+RandomizedDelaySec=30min
+
+[Install]
+WantedBy=timers.target

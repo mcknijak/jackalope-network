@@ -1,0 +1,19 @@
+name: obsidian-couchdb
+
+services:
+  couchdb:
+    image: couchdb:3
+    container_name: couchdb
+    restart: unless-stopped
+    environment:
+      COUCHDB_USER: ${COUCHDB_USER}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD}
+    volumes:
+      - /mnt/data/couchdb/data:/opt/couchdb/data
+      - /mnt/data/couchdb/config:/opt/couchdb/etc/local.d
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

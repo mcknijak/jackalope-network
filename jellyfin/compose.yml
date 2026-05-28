@@ -1,0 +1,34 @@
+name: jellyfin
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    user: "1000:1000"
+    group_add:
+      # Allow access to /dev/dri for Intel QuickSync hardware transcoding.
+      # The render and video group IDs come from the host. Find them with
+      # `getent group render video` and adjust if they differ.
+      - "104"  # render
+      - "44"   # video
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - jellyfin_config:/config
+      - jellyfin_cache:/cache
+      - /mnt/data/jellyfin/movies:/media/movies:ro
+      - /mnt/data/jellyfin/shows:/media/shows:ro
+      - /mnt/data/jellyfin/music:/media/music:ro
+    environment:
+      - JELLYFIN_PublishedServerUrl=https://jellyfin.jackalope.network
+    networks:
+      - proxy
+
+volumes:
+  jellyfin_config:
+  jellyfin_cache:
+
+networks:
+  proxy:
+    external: true

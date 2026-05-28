@@ -1,0 +1,11 @@
+[Unit]
+Description=Nightly restic backup to the local USB drive
+After=network-online.target docker.service mnt-backup.mount
+Wants=docker.service mnt-backup.mount
+
+[Service]
+Type=oneshot
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+ExecStart=/usr/local/sbin/restic-backup.sh usb

@@ -1,0 +1,26 @@
+# Secrets and per-host config
+.env
+*.env
+!*.env.example
+restic.env
+secrets/
+*.key
+*.pem
+*.crt
+id_rsa*
+id_ed25519*
+
+# Data (should never be in git, lives on the server under /mnt/data)
+data/
+volumes/
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Caddy build artifacts (if anyone runs xcaddy locally)
+caddy/caddy

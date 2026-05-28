@@ -1,0 +1,48 @@
+# Global options
+{
+	email you@jackalope.network
+
+	# Default ACME challenge for every site below: DNS-01 via Porkbun.
+	# This works without inbound ports being open, which fits the
+	# Tailscale-only access pattern.
+	acme_dns porkbun {
+		api_key {env.PORKBUN_API_KEY}
+		api_secret_key {env.PORKBUN_API_SECRET_KEY}
+	}
+}
+
+# Photos: Immich
+immich.jackalope.network {
+	reverse_proxy immich_server:2283
+}
+
+# Video: Jellyfin
+jellyfin.jackalope.network {
+	reverse_proxy jellyfin:8096
+}
+
+# Obsidian sync: CouchDB
+# CouchDB needs CORS headers for the LiveSync plugin; CouchDB sets these
+# itself once configure-cors.sh has been run, so Caddy just proxies.
+couchdb.jackalope.network {
+	reverse_proxy couchdb:5984
+}
+
+# Matrix homeserver (client API only; federation is off).
+matrix.jackalope.network {
+	reverse_proxy synapse:8008
+}
+
+# Element Web client
+element.jackalope.network {
+	reverse_proxy element-web:80
+}
+
+# Public photo sharing arrives via Cloudflare Tunnel and is proxied
+# to Caddy as plain HTTP on the loopback. Caddy still issues a real
+# cert for the hostname so Immich's web UI knows its true origin.
+# Uncomment after cloudflared is configured (see top-level README).
+#
+# photos.jackalope.network {
+# 	reverse_proxy immich_server:2283
+# }

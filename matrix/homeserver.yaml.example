@@ -1,0 +1,61 @@
+# Synapse homeserver config for jackalope.network.
+#
+# This file is a starting point. Generate the real one with:
+#   docker compose run --rm synapse generate
+# then edit it to match what is shown here. The fields below are the
+# ones that matter for this deployment; leave others at the generated
+# defaults unless you have a reason to change them.
+
+server_name: "jackalope.network"
+pid_file: /data/homeserver.pid
+
+# Listen for HTTP from Caddy. No TLS here; Caddy terminates TLS.
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: true
+    bind_addresses: ['0.0.0.0']
+    resources:
+      - names: [client]
+        compress: false
+
+database:
+  name: psycopg2
+  args:
+    user: synapse
+    password: REPLACE_ME_WITH_POSTGRES_PASSWORD
+    database: synapse
+    host: postgres
+    cp_min: 5
+    cp_max: 10
+
+log_config: "/data/jackalope.network.log.config"
+media_store_path: /media_store
+
+# These three are filled in by `synapse generate`. Keep what it gave you.
+registration_shared_secret: "GENERATED_BY_SYNAPSE_GENERATE"
+macaroon_secret_key: "GENERATED_BY_SYNAPSE_GENERATE"
+form_secret: "GENERATED_BY_SYNAPSE_GENERATE"
+
+signing_key_path: "/data/jackalope.network.signing.key"
+
+trusted_key_servers:
+  - server_name: "matrix.org"
+
+# --- Federation: OFF ---
+# We're running closed. Reasons and reversibility notes are in
+# docs/decisions.md. New rooms created via Element default to
+# m.federate: true (the "Allow users on other servers to join"
+# toggle), which preserves the option to flip federation on later.
+federation_domain_whitelist: []
+
+# Disable public signup. Users are created with register_new_matrix_user.
+enable_registration: false
+
+# Anonymous stats reports to matrix.org
+report_stats: false
+
+# Reasonable defaults for a small private server
+url_preview_enabled: true
+max_upload_size: 100M
