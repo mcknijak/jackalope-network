@@ -17,6 +17,8 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+      # Static welcome page (built from /srv/welcome). Read-only mount.
+      - /srv/welcome/dist:/srv/welcome:ro
     networks:
       - proxy
 

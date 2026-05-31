@@ -1,0 +1,46 @@
+.footer {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--fg-muted);
+  font-size: 0.82rem;
+}
+
+.mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.markLogo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.markText {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--fg);
+  font-size: 0.9rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--fg-muted);
+}
+
+.status[data-state='online']  { color: var(--green); }
+.status[data-state='offline'] { color: var(--orange); }
+.status[data-state='pending'] { color: var(--fg-muted); }

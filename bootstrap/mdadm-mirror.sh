@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
-# Create a RAID1 mirror over two block devices, format ext4,
-# mount at /mnt/data, and create the per-app subdirectories.
+# Create a RAID1 mirror over two block devices, optionally wrap it in
+# LUKS, format ext4, mount at /mnt/data, and create the per-app
+# subdirectories.
 #
 # Usage:  sudo bash bootstrap/mdadm-mirror.sh /dev/sdX /dev/sdY
 #
@@ -22,6 +23,8 @@ fi
 DEV1="$1"
 DEV2="$2"
 MD=/dev/md0
+MAPPER_NAME=data-crypt
+MAPPER_PATH="/dev/mapper/${MAPPER_NAME}"
 MOUNT=/mnt/data
 OWNER_USER="${OWNER_USER:-jack}"
 
@@ -37,15 +40,33 @@ cat <<EOF
 About to:
   - WIPE ${DEV1} and ${DEV2}
   - Create RAID1 mirror at ${MD}
+  - Optionally wrap the mirror in LUKS
   - Format ext4
   - Mount at ${MOUNT}
-  - Persist in /etc/fstab via UUID
+  - Persist in /etc/fstab (and /etc/crypttab if LUKS)
 
 EOF
 read -r -p "Type YES to continue: " confirm
 if [[ "$confirm" != "YES" ]]; then
   echo "Aborted."
   exit 1
+fi
+
+echo
+echo "Encrypt the mirror with LUKS?"
+echo "  Recommended for any data you would not want read off a stolen drive."
+echo "  After enabling, every reboot needs an interactive unlock over SSH."
+echo "  See docs/encryption-at-rest.md for the post-reboot procedure."
+echo
+read -r -p "Enable LUKS on the mirror? [y/N]: " use_luks_raw
+USE_LUKS=no
+if [[ "${use_luks_raw,,}" == "y" || "${use_luks_raw,,}" == "yes" ]]; then
+  USE_LUKS=yes
+  if ! command -v cryptsetup >/dev/null; then
+    echo ">>> Installing cryptsetup"
+    apt-get update
+    apt-get install -y cryptsetup
+  fi
 fi
 
 echo ">>> Zeroing superblocks (in case the devices were previously part of an array)"
@@ -59,16 +80,47 @@ echo ">>> Persisting mdadm config"
 mdadm --detail --scan >> /etc/mdadm/mdadm.conf
 update-initramfs -u
 
-echo ">>> Formatting ext4"
-mkfs.ext4 -L homelab-data "$MD"
+if [[ "$USE_LUKS" == "yes" ]]; then
+  echo ">>> Formatting LUKS on the mirror"
+  echo "    You will be prompted for the LUKS passphrase twice."
+  echo "    Pick a strong one. Store it in your password manager."
+  cryptsetup luksFormat --type luks2 --pbkdf argon2id "$MD"
+
+  echo ">>> Opening the LUKS container as ${MAPPER_NAME}"
+  cryptsetup open "$MD" "$MAPPER_NAME"
+
+  FS_TARGET="$MAPPER_PATH"
+else
+  FS_TARGET="$MD"
+fi
+
+echo ">>> Formatting ext4 on ${FS_TARGET}"
+mkfs.ext4 -L homelab-data "$FS_TARGET"
 
 echo ">>> Mounting at ${MOUNT}"
 mkdir -p "$MOUNT"
-UUID=$(blkid -s UUID -o value "$MD")
-if ! grep -q "$UUID" /etc/fstab; then
-  echo "UUID=${UUID} ${MOUNT} ext4 defaults,nofail 0 2" >> /etc/fstab
+
+if [[ "$USE_LUKS" == "yes" ]]; then
+  LUKS_UUID=$(blkid -s UUID -o value "$MD")
+  FS_UUID=$(blkid -s UUID -o value "$MAPPER_PATH")
+
+  if ! grep -q "$LUKS_UUID" /etc/crypttab 2>/dev/null; then
+    # noauto: do not try to unlock at boot. Operator unlocks manually after reboot.
+    echo "${MAPPER_NAME} UUID=${LUKS_UUID} none luks,noauto" >> /etc/crypttab
+  fi
+
+  if ! grep -q "$FS_UUID" /etc/fstab; then
+    # noauto plus nofail: do not block boot if the mapper is not opened yet.
+    echo "UUID=${FS_UUID} ${MOUNT} ext4 defaults,noauto,nofail 0 2" >> /etc/fstab
+  fi
+  mount "$MOUNT"
+else
+  FS_UUID=$(blkid -s UUID -o value "$MD")
+  if ! grep -q "$FS_UUID" /etc/fstab; then
+    echo "UUID=${FS_UUID} ${MOUNT} ext4 defaults,nofail 0 2" >> /etc/fstab
+  fi
+  mount -a
 fi
-mount -a
 
 echo ">>> Creating app subdirectories"
 install -d -o "$OWNER_USER" -g "$OWNER_USER" \
@@ -90,3 +142,20 @@ cat /proc/mdstat
 echo
 echo "Initial sync runs in the background and can take several hours."
 echo "Check progress any time with: cat /proc/mdstat"
+
+if [[ "$USE_LUKS" == "yes" ]]; then
+  cat <<EOF
+
+>>> LUKS is enabled on ${MD}.
+
+After every reboot, /mnt/data will NOT mount automatically. SSH in
+and run:
+
+    sudo cryptsetup open ${MD} ${MAPPER_NAME}
+    sudo mount ${MOUNT}
+    for svc in /srv/*/; do (cd "\$svc" && docker compose up -d); done
+
+Full procedure: docs/encryption-at-rest.md.
+
+EOF
+fi

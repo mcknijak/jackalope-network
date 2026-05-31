@@ -24,3 +24,8 @@ Thumbs.db
 
 # Caddy build artifacts (if anyone runs xcaddy locally)
 caddy/caddy
+
+# welcome page build output and node deps
+welcome/dist/
+welcome/node_modules/
+welcome/.vite/

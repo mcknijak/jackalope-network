@@ -1,6 +1,6 @@
 # Homelab Server: Initial Plan
 
-Drafted 2026-05-28.
+Drafted 2026-05-28. **Historical.** This is the original brainstorm before the architecture was nailed down. Some specifics here are stale (DNS provider, public-ingress mechanism, etc.). For the current state of every decision, see `docs/decisions.md`. For the current setup steps, see the top-level `README.md`.
 
 ## Goals
 

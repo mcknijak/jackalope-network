@@ -11,6 +11,42 @@
 	}
 }
 
+# ── Root: public welcome page ────────────────────────────────────────────────
+# jackalope.network apex serves the static landing built from /srv/welcome.
+# This is the one always-public surface besides photos.jackalope.network.
+# Plan to expose it via Tailscale Funnel (same daemon as photo sharing,
+# TCP passthrough so Caddy keeps terminating TLS). See README step 13 and
+# docs/why-tailscale.md. Until that's wired up, this site block still works
+# on the tailnet.
+jackalope.network {
+	root * /srv/welcome
+	encode zstd gzip
+	file_server
+	header {
+		# Defense-in-depth headers for a static page.
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "interest-cohort=()"
+	}
+}
+
+# ── Tailnet probe ────────────────────────────────────────────────────────────
+# Static 200 used by the welcome page to detect whether the browser can reach
+# the tailnet. DNS for probe.jackalope.network points at the tailnet IP, so a
+# successful fetch implies the client is on the tailnet. CORS is opened to
+# the welcome page's origin so the cross-origin fetch can read the response.
+probe.jackalope.network {
+	@welcome header Origin "https://jackalope.network"
+	header @welcome Access-Control-Allow-Origin "https://jackalope.network"
+	header Cache-Control "no-store"
+	respond /ok 200 {
+		body "ok"
+	}
+	respond 404
+}
+
+# ── Apps (tailnet-only) ──────────────────────────────────────────────────────
+
 # Photos: Immich
 immich.jackalope.network {
 	reverse_proxy immich_server:2283
@@ -38,10 +74,12 @@ element.jackalope.network {
 	reverse_proxy element-web:80
 }
 
-# Public photo sharing arrives via Cloudflare Tunnel and is proxied
-# to Caddy as plain HTTP on the loopback. Caddy still issues a real
-# cert for the hostname so Immich's web UI knows its true origin.
-# Uncomment after cloudflared is configured (see top-level README).
+# ── Public photo sharing ─────────────────────────────────────────────────────
+# Public photo sharing arrives via Tailscale Funnel. Funnel does TCP
+# passthrough to local 443, so Caddy still terminates TLS with its
+# own Let's Encrypt cert for photos.jackalope.network. See README
+# bootstrap step 13 and docs/why-tailscale.md for the Funnel rationale
+# and setup commands. Uncomment after Funnel is enabled.
 #
 # photos.jackalope.network {
 # 	reverse_proxy immich_server:2283

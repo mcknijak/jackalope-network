@@ -1,0 +1,140 @@
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 2x2 grid sized so each tile is a square-ish target */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 540px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  aspect-ratio: 1 / 1;
+  padding: 24px 20px 22px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+/* Soft glow in the tile's brand color */
+.tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 35%,
+    color-mix(in srgb, var(--tile-color) 22%, transparent),
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+a.tile:hover {
+  border-color: var(--tile-color);
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px var(--shadow);
+}
+
+a.tile:hover::before {
+  opacity: 1;
+}
+
+a.tile:hover .icon {
+  transform: scale(1.08);
+}
+
+.iconWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Logo dominates the tile. With aspect-ratio: 1/1 on the tile
+     itself, width = height, so a percentage gives a square icon
+     area that scales with the grid column width. */
+  width: 68%;
+  aspect-ratio: 1 / 1;
+  max-width: 240px;
+}
+
+.icon {
+  width: 100%;
+  height: 100%;
+  /* The simple-icons SVGs are single-path and have no fill set, so
+     CSS color would not apply directly. We use the SVG as a CSS mask
+     and fill the resulting shape with the tile's brand color via
+     background-color. --icon-url and --tile-color are set per tile
+     by inline style. */
+  background-color: var(--tile-color);
+  -webkit-mask: var(--icon-url) no-repeat center / contain;
+          mask: var(--icon-url) no-repeat center / contain;
+  transition: transform 0.25s ease, filter 0.25s ease;
+  filter: drop-shadow(0 4px 14px color-mix(in srgb, var(--tile-color) 35%, transparent));
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.app {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--fg);
+  letter-spacing: 0.02em;
+}
+
+.role {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+.lockBadge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 12px;
+  color: var(--orange);
+  border: 1px solid var(--orange);
+  background-color: rgba(255, 158, 100, 0.08);
+}
+
+.tileDisabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  filter: saturate(0.5);
+}

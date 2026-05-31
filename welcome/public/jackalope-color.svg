@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 260" aria-label="Low-poly jackalope logo">
+
+  <!-- ═══════════════════════════════════════════════
+       JACKALOPE — facing LEFT, sitting upright
+       Low-poly faceted style, Tokyo Night palette
+       ═══════════════════════════════════════════════ -->
+
+  <!-- ── ANTLERS (green, sweep up-right from back of head) ── -->
+  <!-- Main beam lower -->
+  <polygon points="108,68 116,62 168,24 160,30"    fill="#9ece6a"/>
+  <!-- Main beam upper -->
+  <polygon points="160,30 168,24 186,12 178,18"    fill="#7db54a"/>
+  <!-- Brow tine (forward branch) -->
+  <polygon points="138,45 148,40 136,22 126,26"    fill="#9ece6a"/>
+  <polygon points="126,26 136,22 130,12 120,16"    fill="#7db54a"/>
+  <!-- Back tine (rises from near tip) -->
+  <polygon points="162,26 172,22 178,12 170,14"    fill="#9ece6a"/>
+  <!-- Base shadow/fill connecting antler to head -->
+  <polygon points="108,68 116,62 148,40 138,45 120,58" fill="#587539"/>
+
+  <!-- ── EAR (horizontal, swept right — jackrabbit style) ── -->
+  <!-- Outer ear body -->
+  <polygon points="82,70 82,58 110,58 208,58 208,72 110,72" fill="#3d59a1"/>
+  <!-- Inner ear stripe (lighter) -->
+  <polygon points="85,68 85,62 110,62 202,62 202,68 110,68" fill="#7aa2f7"/>
+  <!-- Ear highlight near tip -->
+  <polygon points="188,62 208,60 208,68 190,68"    fill="#5585e8" opacity="0.6"/>
+  <!-- Ear base shading where it meets head -->
+  <polygon points="82,70 82,58 88,62 90,70"        fill="#2a4d8f"/>
+
+  <!-- ── HEAD ── -->
+  <!-- Forehead / crown -->
+  <polygon points="56,64 82,58 82,72 65,74"        fill="#3b4261"/>
+  <polygon points="40,78 56,64 65,74 52,84"        fill="#2f334d"/>
+  <!-- Upper muzzle -->
+  <polygon points="32,92 40,78 52,84 42,98"        fill="#24283b"/>
+  <!-- Nose tip -->
+  <polygon points="28,95 32,92 38,104 30,106"      fill="#2f334d"/>
+  <!-- Nose highlight -->
+  <polygon points="28,95 32,90 34,96 30,98"        fill="#f7768e"/>
+  <!-- Chin / lower muzzle -->
+  <polygon points="30,106 38,104 44,116 34,120"    fill="#24283b"/>
+  <!-- Throat -->
+  <polygon points="34,120 44,116 54,128 42,130"    fill="#2f334d"/>
+  <!-- Back of head upper -->
+  <polygon points="82,72 108,68 110,84 92,88"      fill="#414868"/>
+  <!-- Back of head lower -->
+  <polygon points="92,88 110,84 112,102 96,108"    fill="#3b4261"/>
+  <!-- Central face -->
+  <polygon points="56,64 82,72 75,88 58,84"        fill="#414868"/>
+  <polygon points="58,84 75,88 70,105 52,108"      fill="#3b4261"/>
+  <!-- Muzzle side -->
+  <polygon points="40,78 58,84 52,108 38,104"      fill="#2f334d"/>
+  <!-- Cheek to throat -->
+  <polygon points="52,108 70,105 68,125 50,128"    fill="#24283b"/>
+  <!-- Neck back -->
+  <polygon points="96,108 112,102 114,120 98,124"  fill="#2f334d"/>
+
+  <!-- ── EYE ── -->
+  <circle cx="52" cy="86" r="8"   fill="#1a1b2e"/>
+  <circle cx="52" cy="86" r="6"   fill="#7dcfff"/>
+  <circle cx="52" cy="86" r="3"   fill="#1a1b2e"/>
+  <circle cx="50" cy="84" r="1.5" fill="white" opacity="0.9"/>
+
+  <!-- ── NECK ── -->
+  <polygon points="50,128 68,125 72,142 54,145"    fill="#24283b"/>
+  <polygon points="68,125 98,124 100,140 72,142"   fill="#2f334d"/>
+
+  <!-- ── CHEST HIGHLIGHT (lighter polygon suggesting depth) ── -->
+  <polygon points="54,148 66,144 62,162 50,158"    fill="#414868"/>
+
+  <!-- ── BODY — large rounded shape, many facets ── -->
+  <!-- Top of back -->
+  <polygon points="100,140 128,132 138,148 112,152" fill="#414868"/>
+  <polygon points="128,132 158,142 162,158 138,148" fill="#3b4261"/>
+  <polygon points="158,142 180,155 182,172 162,158" fill="#414868"/>
+
+  <!-- Upper body left/front -->
+  <polygon points="72,142 100,140 98,162 74,165"   fill="#3b4261"/>
+  <polygon points="74,165 98,162 95,185 72,188"    fill="#2f334d"/>
+
+  <!-- Body center -->
+  <polygon points="98,162 112,152 115,172 95,175"  fill="#3b4261"/>
+  <polygon points="112,152 138,148 140,168 115,172" fill="#414868"/>
+  <polygon points="140,168 162,158 165,178 142,182" fill="#3b4261"/>
+  <polygon points="162,158 182,172 185,192 165,178" fill="#414868"/>
+
+  <!-- Body center lower -->
+  <polygon points="95,175 115,172 112,195 90,198"  fill="#2f334d"/>
+  <polygon points="112,195 140,168 142,182 115,198" fill="#3b4261"/>
+  <polygon points="142,182 165,178 168,200 144,204" fill="#2f334d"/>
+  <polygon points="165,178 185,192 186,212 168,200" fill="#3b4261"/>
+
+  <!-- Belly / front lower -->
+  <polygon points="54,145 72,142 74,165 56,168"    fill="#24283b"/>
+  <polygon points="56,168 74,165 72,188 54,192"    fill="#1e2030"/>
+  <polygon points="54,192 72,188 70,212 50,215"    fill="#1a1b2e"/>
+
+  <!-- Lower body -->
+  <polygon points="90,198 112,195 110,218 86,222"  fill="#24283b"/>
+  <polygon points="110,218 115,198 144,204 140,222" fill="#2f334d"/>
+  <polygon points="140,222 144,204 168,200 165,222" fill="#24283b"/>
+  <polygon points="165,222 168,200 186,212 182,228" fill="#2f334d"/>
+
+  <!-- ── HAUNCHES / FEET ── -->
+  <!-- Left (front) haunch -->
+  <polygon points="50,215 70,212 68,232 48,235"    fill="#1e2030"/>
+  <polygon points="48,235 68,232 65,248 45,250"    fill="#1a1b2e"/>
+
+  <!-- Center between haunches -->
+  <polygon points="86,222 110,218 108,238 82,240"  fill="#1a1b2e"/>
+
+  <!-- Right (back) haunch -->
+  <polygon points="140,222 165,222 162,240 138,242" fill="#24283b"/>
+  <polygon points="162,240 165,222 182,228 178,245" fill="#1e2030"/>
+  <polygon points="178,245 182,228 192,218 188,238" fill="#24283b"/>
+
+  <!-- ── TAIL (fluffy white ball at upper-back of body) ── -->
+  <ellipse cx="50" cy="192" rx="16" ry="13" fill="#a9b1d6"/>
+  <ellipse cx="50" cy="190" rx="10" ry="8"  fill="#c0caf5"/>
+  <ellipse cx="49" cy="189" rx="5"  ry="4"  fill="white" opacity="0.8"/>
+
+</svg>

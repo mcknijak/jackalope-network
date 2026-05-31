@@ -1,0 +1,56 @@
+/* Tokyo Night palette, mirrored from the portfolio so the two sites
+   feel like the same world. */
+
+:root {
+  /* Dark mode (default) */
+  --bg:           #0d1224;
+  --bg-secondary: #111a2e;
+  --bg-elevated:  #1a2540;
+  --bg-hover:     #243050;
+
+  --fg:           #c0caf5;
+  --fg-muted:     #7982b0;
+  --fg-subtle:    #565f89;
+
+  --accent:       #7aa2f7;
+  --accent-dim:   #3d59a1;
+  --purple:       #bb9af7;
+  --cyan:         #7dcfff;
+  --green:        #9ece6a;
+  --orange:       #ff9e64;
+  --red:          #f7768e;
+  --yellow:       #e0af68;
+
+  --border:       #3b4261;
+  --border-light: #414868;
+
+  --shadow:       rgba(0, 0, 0, 0.4);
+  --shadow-lg:    rgba(0, 0, 0, 0.6);
+}
+
+[data-theme='light'] {
+  /* Tokyo Night Day */
+  --bg:           #e1e2e7;
+  --bg-secondary: #d5d6db;
+  --bg-elevated:  #c4c8da;
+  --bg-hover:     #b4b8d0;
+
+  --fg:           #343b58;
+  --fg-muted:     #5a6291;
+  --fg-subtle:    #8189af;
+
+  --accent:       #2e7de9;
+  --accent-dim:   #b8d0ff;
+  --purple:       #7847bd;
+  --cyan:         #007197;
+  --green:        #587539;
+  --orange:       #b15c00;
+  --red:          #c64343;
+  --yellow:       #8c6c3e;
+
+  --border:       #a8aecb;
+  --border-light: #c4c8da;
+
+  --shadow:       rgba(52, 59, 88, 0.15);
+  --shadow-lg:    rgba(52, 59, 88, 0.25);
+}

@@ -50,12 +50,59 @@ trusted_key_servers:
 # toggle), which preserves the option to flip federation on later.
 federation_domain_whitelist: []
 
+# --- Registration ---
 # Disable public signup. Users are created with register_new_matrix_user.
 enable_registration: false
+# Belt and suspenders: if registration is ever flipped on by accident,
+# a valid token will still be required.
+registration_requires_token: true
 
 # Anonymous stats reports to matrix.org
 report_stats: false
 
-# Reasonable defaults for a small private server
+# --- Encryption ---
+# Every new room is end-to-end encrypted by default. Users can still
+# opt out per room (the room creation dialog has the toggle), which
+# keeps bridges and bots that cannot handle E2EE usable.
+encryption_enabled_by_default_for_room_type: all
+
+# --- URL preview SSRF defense ---
+# The URL-preview fetcher could otherwise be used to scan the internal
+# Docker network or hit cloud-metadata endpoints. Block all the usual
+# private-range targets explicitly.
 url_preview_enabled: true
+url_preview_ip_range_blacklist:
+  - '127.0.0.0/8'
+  - '10.0.0.0/8'
+  - '172.16.0.0/12'
+  - '192.168.0.0/16'
+  - '100.64.0.0/10'      # CGNAT / Tailscale
+  - '169.254.0.0/16'     # link-local / AWS-style metadata
+  - '::1/128'
+  - 'fe80::/10'
+  - 'fc00::/7'
+
+# --- Rate limits ---
+# Defaults are reasonable; tightened slightly to slow credential
+# stuffing and DM spam from any future federated peers.
+rc_login:
+  address:
+    per_second: 0.1
+    burst_count: 5
+  account:
+    per_second: 0.1
+    burst_count: 5
+  failed_attempts:
+    per_second: 0.05
+    burst_count: 3
+
+rc_registration:
+  per_second: 0.1
+  burst_count: 3
+
+rc_message:
+  per_second: 0.5
+  burst_count: 10
+
+# --- Uploads ---
 max_upload_size: 100M

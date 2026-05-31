@@ -1,0 +1,34 @@
+# Netlify build config for the welcome page.
+#
+# This deploys the static landing under welcome/ as a placeholder
+# while the home server hardware is being assembled. Once the
+# server is live and Tailscale Funnel is wired up, point
+# jackalope.network at the Funnel hostname instead and drop the
+# Netlify site (or keep it as a fallback, harmless either way).
+#
+# Setup steps (one-time):
+#   1. Push this repo to GitHub.
+#   2. In Netlify, "Add new site" -> "Import from GitHub", pick the repo.
+#   3. Netlify reads this file and figures out the rest. Accept defaults.
+#   4. Site goes live at <site-name>.netlify.app.
+#   5. Optional: in Netlify "Domain settings", add jackalope.network as a
+#      custom domain. Netlify will issue a Let's Encrypt cert automatically.
+#      In Porkbun, change the apex from the placeholder A record to a CNAME
+#      (or ALIAS / ANAME) pointing at <site-name>.netlify.app.
+
+[build]
+  base    = "welcome"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Static-page security headers. Same set Caddy will serve later, so the
+# placeholder and the real thing behave identically.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
+    Permissions-Policy     = "interest-cohort=()"
