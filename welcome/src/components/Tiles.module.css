@@ -3,16 +3,32 @@
   flex-direction: column;
 }
 
-/* 2x2 grid sized so each tile is a square-ish target */
+/* Three per row, with any partial last row centered horizontally.
+   Flexbox (not grid) so the lone trailing tile sits in the middle
+   instead of left-aligned. */
 .grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
 }
 
-@media (max-width: 540px) {
-  .grid {
-    grid-template-columns: 1fr;
+.grid > * {
+  flex: 0 0 calc((100% - 2 * 18px) / 3);
+  max-width: calc((100% - 2 * 18px) / 3);
+}
+
+@media (max-width: 720px) {
+  .grid > * {
+    flex-basis: calc((100% - 18px) / 2);
+    max-width: calc((100% - 18px) / 2);
+  }
+}
+
+@media (max-width: 480px) {
+  .grid > * {
+    flex-basis: 100%;
+    max-width: 100%;
   }
 }
 
@@ -22,9 +38,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 18px;
+  gap: 14px;
   aspect-ratio: 1 / 1;
-  padding: 24px 20px 22px;
+  padding: 18px 14px 16px;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -71,9 +87,9 @@ a.tile:hover .icon {
   /* Logo dominates the tile. With aspect-ratio: 1/1 on the tile
      itself, width = height, so a percentage gives a square icon
      area that scales with the grid column width. */
-  width: 68%;
+  width: 62%;
   aspect-ratio: 1 / 1;
-  max-width: 240px;
+  max-width: 160px;
 }
 
 .icon {
@@ -101,14 +117,14 @@ a.tile:hover .icon {
 }
 
 .app {
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--fg);
   letter-spacing: 0.02em;
 }
 
 .role {
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
