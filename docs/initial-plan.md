@@ -56,7 +56,7 @@ Xfinity gateway note: bridge mode on the Xfinity gateway disables WiFi and most 
 
 ## 3. Software stack
 
-- **OS:** Debian 12 server, no GUI. Leaner than Ubuntu and very stable for this use case. Ubuntu Server 24.04 LTS is a fine alternative.
+- **OS:** Debian 13 (Trixie) server, no GUI. Leaner than Ubuntu and very stable for this use case. Ubuntu Server 24.04 LTS is a fine alternative. Debian 12 (Bookworm) enters LTS-only support on June 10, 2026, so a fresh install today should start on Trixie rather than Bookworm.
 - **Containers:** Docker plus Docker Compose. One `compose.yml` per app stack, all living under `/srv/`.
 - **Reverse proxy:** Caddy. Automatic HTTPS, very simple config. Use the DNS-01 challenge so certificates can be issued even without inbound ports open.
 - **Remote access:** Tailscale.
@@ -75,7 +75,7 @@ Xfinity gateway note: bridge mode on the Xfinity gateway disables WiFi and most 
 ## 4. Step-by-step plan
 
 1. Buy hardware (OptiPlex, two 8 TB drives, 8 TB USB). About a week of lead time on eBay is typical.
-2. Install Debian 12 to the NVMe. Enable SSH, disable root password login, add the SSH key.
+2. Install Debian 13 (Trixie) to the NVMe. Enable SSH, disable root password login, add the SSH key.
 3. Mirror the HDDs: `mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sda /dev/sdb`, format ext4 or btrfs, mount at `/mnt/data`.
 4. Install Docker and Compose from the official Docker repository (not the snap).
 5. Install Tailscale, run `tailscale up`, note the `100.x.x.x` IP.

@@ -17,7 +17,7 @@ The architecture, hardware recommendations, security posture, and decision log l
 
 ## Stack at a glance
 
-- **OS:** Debian 12 server, no GUI
+- **OS:** Debian 13 (Trixie) server, no GUI
 - **Containers:** Docker plus Docker Compose
 - **Reverse proxy:** Caddy with the Porkbun DNS plugin for automatic wildcard TLS
 - **Remote access:** Tailscale (everything is private to the tailnet by default)
@@ -80,7 +80,7 @@ These are the steps to go from a freshly imaged Debian box to a running stack.
 
 > **Stage scope:** the order below is the stage-3 path (full mirror + USB backup + B2). Read `docs/staged-rollout.md` first; it tells you which of these steps to do at stage 1 vs stage 2 vs stage 3. The inline `[stage X]` tags below mark which step belongs to which stage. Steps with no tag apply at every stage.
 
-1. **[all stages]** Install Debian 12 to the NVMe. Create one user, add your SSH public key, enable SSH.
+1. **[all stages]** Install Debian 13 (Trixie) to the NVMe. Create one user, add your SSH public key, enable SSH.
 2. **[all stages]** Copy this repo to the server: `git clone <repo> /srv/homelab-server` and symlink each stack directory into `/srv/` (or just clone into `/srv` and reference paths directly).
 3. **[all stages]** Run `bootstrap/debian-setup.sh` as root. This installs packages, hardens SSH, installs Docker, installs Tailscale, configures UFW, enables unattended security updates, and creates the external Docker network used by Caddy. The script's "Next steps" echo at the end branches by stage.
 4. **[all stages]** Run `tailscale up` interactively. Note the `100.x.x.x` address.

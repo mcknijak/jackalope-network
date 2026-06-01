@@ -2,6 +2,14 @@
 
 Running log of architecture decisions and the reasoning behind them. Newest entries at the top.
 
+## 2026-06-01: OS pin: Debian 13 (Trixie), not Debian 12 (Bookworm)
+
+**Decision:** new installs of the homelab box use Debian 13 (Trixie, currently at point release 13.5). Bookworm is fine for existing installs but not the right starting point for a fresh build in mid-2026.
+
+**Why:** Bookworm's full security support ends June 10, 2026 and transitions to LTS-only (community-maintained, narrower package coverage). Bootstrapping on Bookworm today means planning a `dist-upgrade` to Trixie within weeks of standing the box up. Trixie has been out since August 2025, is on its fifth point release, and runs full Debian security support through August 2028 plus LTS through June 2030. Docker CE installs and runs identically on both (cgroups v2, systemd cgroup driver), so the compatibility argument for staying on Bookworm doesn't exist. The one Trixie gotcha being discussed in the community (systemd 256+ behavior inside unprivileged Proxmox LXCs) does not apply to bare-metal installs.
+
+**How to apply:** README, initial-plan, and the bootstrap script header all reference Trixie. The bootstrap script itself resolves the apt codename from `/etc/os-release` at runtime, so it remains correct on either release without edits.
+
 ## 2026-06-01: Added four services (ebooks, spokenword, cabinet, portainer)
 
 **Decision:** added four new services to the stack:

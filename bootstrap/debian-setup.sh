@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
-# One-shot bootstrap for a fresh Debian 12 install.
+# One-shot bootstrap for a fresh Debian 13 (Trixie) install.
+# Also runs fine on Debian 12 (Bookworm); the Docker apt line resolves
+# the codename from /etc/os-release at install time.
 # Run as root: sudo bash bootstrap/debian-setup.sh
 #
 # Idempotent where it can be. Re-running should be safe.
