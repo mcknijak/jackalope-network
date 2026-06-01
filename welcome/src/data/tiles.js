@@ -72,6 +72,6 @@ export const brand = {
     `Everything here runs on one box in my apartment. Photos, video, notes, chat, ebooks, audiobooks, and a document archive, all behind Tailscale and all owned rather than rented.`,
     `The code, the runbook, and the security audit live in the repo below.`,
   ],
-  repo: 'https://github.com/mcknijak/homelab-server',
+  repo: 'https://github.com/mcknijak/jackalope-network',
   portfolio: 'https://jackmcknight.dev',
 };
