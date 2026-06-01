@@ -1,0 +1,24 @@
+name: ebooks
+
+services:
+  calibre-web:
+    image: lscr.io/linuxserver/calibre-web:latest
+    container_name: calibre-web
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/New_York
+      # Pulls in the Calibre binaries used for format conversion and the
+      # send-to-Kindle / send-by-email feature. Slightly larger image,
+      # but the alternative is no EPUB->MOBI conversion at all.
+      - DOCKER_MODS=linuxserver/mods:universal-calibre
+    volumes:
+      - /mnt/data/ebooks/config:/config
+      - /mnt/data/ebooks/library:/books
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

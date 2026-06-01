@@ -2,6 +2,8 @@
 
 Audit date: 2026-05-28. Reviewer: in-house. Re-review after any major architecture change, and at least annually.
 
+> **Stage scope:** the controls and gaps in this audit describe the stage-3 deployment (LUKS on the RAID1 mirror, restic to local USB nightly and Backblaze B2 weekly, full 3-2-1 backup, friends and family on the box). At stage 1 most of these controls are not yet in place; the stage-1 risk acceptance ("every data class is a mirror of a still-live upstream, the box holds no copy that is the only copy of itself") is what makes that acceptable. At stage 2 LUKS is on the data drive and B2 backups exist, but local USB backups and RAID1 redundancy do not. The audit posture below is the bar that has to be met before friends and family come on, which is also the trigger for advancing to stage 3. See `docs/staged-rollout.md`.
+
 ## Threat model
 
 The scaffolding is hardened against threat model **(b): targeted but not nation-state**. Concretely, this means defending against:
@@ -30,6 +32,11 @@ If the threat model ever shifts (for example, if any of the data becomes legally
 | Photos (shared via link) | Same Immich library | TLS via Tailscale Funnel (TCP passthrough) to Caddy | Same | Same | Anyone with the link can view, but only the album the owner specifies |
 | Movies, shows, music | Jellyfin library | TLS via Caddy | LUKS on the mirror | Not backed up (re-acquirable) | Tailnet-only |
 | Chat (Matrix) | Synapse Postgres + media store | TLS via Caddy | LUKS on the mirror | restic AES-256 to USB and B2 | E2EE rooms add a second encryption layer on top |
+| Ebooks (Calibre-Web library) | `/mnt/data/ebooks` on the mirror | TLS via Caddy | LUKS on the mirror | restic AES-256 to USB and B2 | OPDS endpoint authenticated by Calibre-Web user/password |
+| Audiobooks + podcasts (Audiobookshelf) | `/mnt/data/spokenword` on the mirror | TLS via Caddy | LUKS on the mirror | restic AES-256 to USB and B2 | Treated Obsidian-class; media files included in backups |
+| Document archive (Paperless-ngx) | `/mnt/data/cabinet` on the mirror, plus Paperless Postgres | TLS via Caddy | LUKS on the mirror | restic AES-256 to USB and B2; Postgres logical dump alongside | Stage 2+ only. Most "would not want stolen-drive readable" data class in the stack; LUKS is the load-bearing protection. |
+| Received receipt emails (Paperless mail rules) | Polled over IMAPS from `receipts@jackalope.network` at Porkbun, then deleted from server | IMAPS (TLS) | LUKS on the mirror once ingested as a Paperless document | restic AES-256 to USB and B2 | Whitelisted senders are consumed and deleted from the mailbox immediately. Non-whitelisted mail moves to a `Review` folder for human triage; manual move to `Approved` triggers ingestion, otherwise a weekly host-side cron purges `Review` after 30 days. Mailbox password lives in `/etc/cabinet-mailbox.env` (root-owned, 0600). |
+| Portainer config | `/mnt/data/portainer/data` Docker volume | TLS via Caddy | LUKS on the mirror | restic AES-256 to USB and B2 | Tailnet-only access; never on Funnel. See "Portainer trust boundary" below. |
 | Server config + secrets | `/srv` on the NVMe | n/a | OS disk is not LUKS-encrypted (see Open Gaps) | restic AES-256 | `.env` files contain DB passwords, API keys |
 | restic backup archives | USB drive plus Backblaze B2 | TLS to B2 | restic native AES-256 (filesystem layer is plain ext4) | n/a | Single passphrase unlocks both repos |
 
@@ -68,6 +75,24 @@ These changes go in alongside this document. See cross-referenced files for the 
 - `homeserver.yaml.example` adds `url_preview_ip_range_blacklist` covering RFC1918, link-local, loopback, and metadata-service addresses. Prevents the URL-preview fetcher from being used to scan the internal network or hit cloud metadata endpoints.
 - `registration_requires_token: true` is set even though `enable_registration: false`. Belt and suspenders if registration is ever flipped on by accident.
 - Login and message rate limits tightened slightly from defaults to slow credential stuffing.
+
+### Portainer trust boundary
+
+Portainer at `portainer.jackalope.network` (added 2026-06-01) talks to a local Portainer agent over the internal Docker network. The agent mounts `/var/run/docker.sock`, which is functionally equivalent to root on the host: any caller that can talk to the socket can launch privileged containers that mount the host filesystem.
+
+This raises the consequences of a Portainer admin credential leak from "someone can manage some containers" to "someone has root on the box." Mitigations:
+
+- **Tailnet-only, never on Funnel.** The Caddy site block has no public ingress. Adding Funnel to Portainer is an out-of-policy change; the documented escape valve when remote container management is needed is SSH plus `docker compose`, not Funnel.
+- **Admin credential lives only in the password manager.** Same posture as the LUKS and restic passphrases. No second-factor in the initial scaffold; worth enabling under User Settings once Portainer becomes a frequent-use UI.
+- **No additional user accounts unless absolutely necessary.** The threat model does not include "household members who need partial Docker access." If a friend ever needs to see one container's logs, screen-share an SSH session; do not issue a Portainer login.
+- **Not advertised on the welcome page.** Portainer is deliberately omitted from `welcome/src/data/tiles.js` so the public landing page does not surface its existence to visitors. The hostname `portainer.jackalope.network` resolves on the tailnet, but discovery requires already knowing it's there.
+- **Agent architecture from day one.** The Portainer container itself does not mount the socket; only the agent does. This makes adding a second host (a Pi for off-site backups, a second SFF) trivial: the new host runs only the agent and is added as an environment in the UI. Same security boundary, no architectural rework.
+
+The reason this is called out separately rather than rolled into the "what was deliberately not hardened" list: Portainer's blast radius is materially larger than any other app in the stack. Immich admin compromise loses photos; Portainer admin compromise loses the box.
+
+### Cabinet (Paperless-ngx) IMAP credential surface
+
+Cabinet polls `receipts@jackalope.network` over IMAPS. The mailbox password is stored in two places: Paperless's encrypted secret store (managed by the Paperless container, keyed off `PAPERLESS_SECRET_KEY` from `cabinet/.env`), and `/etc/cabinet-mailbox.env` (root-owned, 0600) used by the weekly Trash-purge cron. Both `cabinet/.env` and `/etc/cabinet-mailbox.env` are inside the OS-disk plaintext envelope (see Open Gaps). The mailbox is a single-purpose receive-only inbox at Porkbun, so the worst-case impact of credential leak is read access to whatever receipts haven't been purged yet plus the ability to inject documents into Paperless's consume queue. Mitigation if leaked: rotate the mailbox password at Porkbun in under a minute, update both files, restart `paperless` and the cron unit.
 
 ### Backup repo separation
 

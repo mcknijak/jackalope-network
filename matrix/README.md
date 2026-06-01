@@ -2,6 +2,8 @@
 
 Private Matrix homeserver for `jackalope.network`. Federation is off (see `docs/decisions.md`). Element Web is included as the default client at `https://element.jackalope.network`.
 
+> **Stage scope:** the setup below writes data to `/mnt/data/matrix/`, which at stage 3 is the LUKS-encrypted RAID1 mirror. At stages 1 and 2, `/mnt/data` is either plain directories on the OS disk (stage 1) or a single LUKS-encrypted drive (stage 2). The path stays the same in either case; only the underlying storage shape changes. Make sure the per-app directories exist (`bootstrap/debian-setup.sh` echoes the `mkdir` command, or `bootstrap/mdadm-mirror.sh` creates them at stage 3) before running the steps below. The E2EE-on-by-default plus Secure Backup user setup applies identically at every stage.
+
 ## First-time setup
 
 1. **Set the Postgres password.** Copy `.env.example` to `.env` and set `POSTGRES_PASSWORD` (use `openssl rand -hex 24`).

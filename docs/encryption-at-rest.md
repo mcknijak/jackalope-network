@@ -2,6 +2,8 @@
 
 Where data is encrypted on disk, what is not, and the operating procedure for the parts that need manual intervention.
 
+> **Stage scope:** this doc describes the stage-3 end state (LUKS2 on the `/mnt/data` RAID1 mirror). At stage 1 there is no LUKS at all: data lives plaintext on the OS disk, which is acceptable only because every data class on the box is a mirror of a still-live upstream. The risk acceptance is spelled out in `docs/staged-rollout.md`. At stage 2, LUKS lives on the single stage-2 drive (internal or external) with the same passphrase model and post-reboot procedure described below, substituting the stage-2 device for `/dev/md0`. The OS-disk gap reasoning applies identically at stages 2 and 3. See `docs/staged-rollout.md` for the full lifecycle.
+
 ## What this covers
 
 | Layer | Encrypted? | Key material | Notes |
@@ -13,6 +15,10 @@ Where data is encrypted on disk, what is not, and the operating procedure for th
 | Matrix message bodies in encrypted rooms | E2EE (Megolm) | Per-device keys, backed up via Element Secure Backup | Server stores ciphertext only. See `matrix/README.md` for the user-side setup |
 | Immich uploads in flight | TLS via Caddy (tailnet) or via Tailscale Funnel passthrough to Caddy (public photo shares) | Caddy-issued Let's Encrypt cert in both cases | At rest on the server they sit inside the LUKS-encrypted `/mnt/data` |
 | CouchDB documents | No application-layer encryption | n/a | Protected at rest only by the underlying LUKS-encrypted `/mnt/data` |
+| Ebook library (Calibre-Web) | No application-layer encryption | n/a | LUKS on `/mnt/data` at stages 2 and 3. Plaintext on the OS disk at stage 1 (the canonical library lives on the laptop / source store). |
+| Audiobooks and podcasts (Audiobookshelf) | No application-layer encryption | n/a | Same as ebooks. LUKS on `/mnt/data` at stages 2 and 3; plaintext at stage 1. |
+| Paperless OCR'd documents and Postgres | No application-layer encryption | n/a | Stage 2 and stage 3 only; LUKS on `/mnt/data` is the protection layer. This is the most "you would not want this read off a stolen drive" data class in the stack, which is the load-bearing reason cabinet is held back until LUKS exists. |
+| Portainer config DB (admin user, env definitions) | No application-layer encryption | n/a | LUKS on `/mnt/data` at stages 2 and 3. Sensitivity is moderate (knowing the env layout is useful to an attacker but not directly exploitable); the Docker socket on the host is the actual high-value target, not Portainer's DB. |
 
 ## Why the OS disk is not encrypted
 
@@ -33,16 +39,22 @@ Net: the OS-disk gap costs you "I need to rotate a handful of secrets" if the bo
 
 Every reboot of the server requires this short sequence. Without it, `/mnt/data` is not mounted, so every app container will fail health checks and either restart-loop or exit. Caddy itself will come up (it lives on `/`, which is not encrypted) but every reverse-proxied app will be a 502.
 
+> **Stage note:** the device path differs by stage. **Stage 3** uses `/dev/md0` (the mdadm mirror). **Stage 2** uses the single stage-2 drive directly: typically `/dev/sdb` (or whatever `lsblk` shows for your data drive). **Stage 1** has no LUKS, so this whole procedure does not apply; reboot is unattended. Substitute the right device in step 2 below.
+
 1. SSH to the box from a tailnet device:
 
    ```bash
    ssh jack@<tailnet-ip>
    ```
 
-2. Unlock the LUKS container. You will be prompted for the passphrase you set during `bootstrap/mdadm-mirror.sh`:
+2. Unlock the LUKS container. You will be prompted for the passphrase you set during `bootstrap/mdadm-mirror.sh` (stage 3) or during your stage-2 `cryptsetup luksFormat`:
 
    ```bash
+   # stage 3 (RAID1 mirror):
    sudo cryptsetup open /dev/md0 data-crypt
+
+   # stage 2 (single drive, substitute your device):
+   sudo cryptsetup open /dev/sdb data-crypt
    ```
 
 3. Mount it:

@@ -29,6 +29,13 @@ All files are free of em dashes and use American English, per the standing writi
 - `matrix/homeserver.yaml.example` is hardened: E2EE on by default for new rooms, `url_preview_ip_range_blacklist` covering RFC1918/CGNAT/link-local/loopback, tightened login and message rate limits, `registration_requires_token: true` as belt-and-suspenders even though registration is disabled
 - `matrix/README.md` has the user-registration commands, the Secure Backup setup procedure every user has to do on first login, and the future-federation steps
 
+### Ebooks, Spokenword, Cabinet, Portainer (added 2026-06-01)
+
+- `ebooks/` runs Calibre-Web (`shelf.jackalope.network`); EPUB and PDF only, no comics. Library at `/mnt/data/ebooks/library`, app state at `/mnt/data/ebooks/config`. Stage 1.
+- `spokenword/` runs Audiobookshelf (`spokenword.jackalope.network`) with both audiobook and podcast libraries enabled. All four data dirs bind-mounted under `/mnt/data/spokenword/`. Stage 1.
+- `cabinet/` runs Paperless-ngx (`cabinet.jackalope.network`) with a dedicated Postgres and Redis on an internal `cabinet-internal` Docker network. **Stage 2 only** because the value proposition (shred the physical, trust the digital) requires the backup story stage 2 introduces. Inbound document path is Paperless Mobile (iOS) plus IMAP polling against `receipts@jackalope.network` (a Porkbun-hosted mailbox; $24/year). Mail rules implement a whitelist-consume + catchall-trash pattern; a weekly host-side cron purges Trash older than 30 days.
+- `portainer/` runs Portainer CE plus a local agent (`portainer.jackalope.network`). Agent architecture from day one so adding a second host later is a non-event. Tailnet-only, never on Funnel; the agent has Docker socket access, which is functionally root on the box. Trust boundary spelled out in `portainer/README.md` and `docs/security-audit.md` under "Portainer trust boundary."
+
 ### Welcome page
 
 - `welcome/`: React + Vite project that builds a single-page public landing for `jackalope.network`
@@ -69,7 +76,7 @@ These were left out of the initial scaffolding pass. The reasoning is captured h
 
 Only four things are useful to do before the box is in hand:
 
-1. Buy the box (refurb Dell OptiPlex 7060 SFF or equivalent), two 8 TB drives, and one USB backup drive.
-2. Create the Porkbun API key pair at https://porkbun.com/account/api and toggle API access on `jackalope.network` in the domain list, so the credentials are ready to paste into `caddy/.env`.
+1. Pick what hardware you are buying. The original full stage-3 build is the OptiPlex SFF plus two 8 TB NAS drives plus a USB backup drive (~$680). The phased lifecycle in `docs/staged-rollout.md` defers the drives and the USB drive until stages 2 and 3; at stage 1 the SFF box on its own (~$150 to $250) is enough to run the seven stage-1 apps (Immich, Jellyfin, CouchDB, Matrix, Calibre-Web, Audiobookshelf, Portainer). Cabinet (Paperless-ngx) waits until stage 2. Pick the stage you want to start at and buy accordingly.
+2. Create the Porkbun API key pair at https://porkbun.com/account/api and toggle API access on `jackalope.network` in the domain list, so the credentials are ready to paste into `caddy/.env`. (Needed at any stage where Caddy runs on the box, so stage 1 onward.)
 3. Decide on a hostname for the box (default in the bootstrap script is `jackalope`) and a Linux username (default `jack`). Edit those at the top of `bootstrap/debian-setup.sh` if you want different values.
-4. Pick the LUKS and restic passphrases now and store them in your password manager (and print a backup copy for a physical safe). You will need both during bootstrap and you do not want to be picking strong passphrases under time pressure.
+4. Pick the LUKS and restic passphrases relevant to your starting stage and store them in your password manager (and print a backup copy for a physical safe). LUKS passphrase is needed at stage 2 (single-drive LUKS) and stage 3 (mirror LUKS); restic passphrase is needed at stage 2 (B2 only) and stage 3 (B2 plus USB). Stage 1 needs neither, but picking them in advance for the eventual upgrade is fine. You do not want to be picking strong passphrases under time pressure.

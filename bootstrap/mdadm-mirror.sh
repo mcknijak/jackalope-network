@@ -134,6 +134,18 @@ install -d -o "$OWNER_USER" -g "$OWNER_USER" \
   "${MOUNT}/matrix/media" \
   "${MOUNT}/matrix/postgres" \
   "${MOUNT}/matrix/synapse" \
+  "${MOUNT}/ebooks/library" \
+  "${MOUNT}/ebooks/config" \
+  "${MOUNT}/spokenword/audiobooks" \
+  "${MOUNT}/spokenword/podcasts" \
+  "${MOUNT}/spokenword/metadata" \
+  "${MOUNT}/spokenword/config" \
+  "${MOUNT}/cabinet/data" \
+  "${MOUNT}/cabinet/media" \
+  "${MOUNT}/cabinet/consume" \
+  "${MOUNT}/cabinet/export" \
+  "${MOUNT}/cabinet/postgres" \
+  "${MOUNT}/portainer/data" \
   "${MOUNT}/backups"
 
 echo ">>> Done. Mirror status:"

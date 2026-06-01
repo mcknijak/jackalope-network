@@ -1,0 +1,64 @@
+name: cabinet
+
+services:
+  paperless:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    container_name: paperless
+    restart: unless-stopped
+    depends_on:
+      - paperless-db
+      - paperless-redis
+    environment:
+      PAPERLESS_REDIS: redis://paperless-redis:6379
+      PAPERLESS_DBHOST: paperless-db
+      PAPERLESS_DBNAME: paperless
+      PAPERLESS_DBUSER: paperless
+      PAPERLESS_DBPASS: ${PAPERLESS_DB_PASS}
+      PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY}
+      PAPERLESS_URL: https://cabinet.jackalope.network
+      PAPERLESS_TIME_ZONE: America/New_York
+      PAPERLESS_OCR_LANGUAGE: eng
+      # Auto-classifier runs nightly and learns from manually tagged docs.
+      PAPERLESS_CONSUMER_POLLING: 10
+      # Trust the X-Forwarded-Proto from Caddy.
+      PAPERLESS_USE_X_FORWARD_HOST: "true"
+      PAPERLESS_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
+    volumes:
+      - /mnt/data/cabinet/data:/usr/src/paperless/data
+      - /mnt/data/cabinet/media:/usr/src/paperless/media
+      - /mnt/data/cabinet/consume:/usr/src/paperless/consume
+      - /mnt/data/cabinet/export:/usr/src/paperless/export
+    networks:
+      - proxy
+      - cabinet-internal
+
+  paperless-db:
+    image: postgres:16-alpine
+    container_name: paperless-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: ${PAPERLESS_DB_PASS}
+    volumes:
+      - /mnt/data/cabinet/postgres:/var/lib/postgresql/data
+    networks:
+      - cabinet-internal
+
+  paperless-redis:
+    image: redis:7-alpine
+    container_name: paperless-redis
+    restart: unless-stopped
+    volumes:
+      - paperless_redis:/data
+    networks:
+      - cabinet-internal
+
+volumes:
+  paperless_redis:
+
+networks:
+  proxy:
+    external: true
+  cabinet-internal:
+    driver: bridge

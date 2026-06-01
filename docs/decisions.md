@@ -2,6 +2,73 @@
 
 Running log of architecture decisions and the reasoning behind them. Newest entries at the top.
 
+## 2026-06-01: Added four services (ebooks, spokenword, cabinet, portainer)
+
+**Decision:** added four new services to the stack:
+
+- **`ebooks/`**: Calibre-Web at `shelf.jackalope.network`. Stage 1.
+- **`spokenword/`**: Audiobookshelf at `spokenword.jackalope.network`, with podcast support enabled. Stage 1.
+- **`cabinet/`**: Paperless-ngx at `cabinet.jackalope.network`, with email ingestion from `receipts@jackalope.network`. Stage 2.
+- **`portainer/`**: Portainer CE plus local agent at `portainer.jackalope.network`. Stage 1.
+
+All four are tailnet-only. None get Funnel exposure.
+
+### Ebooks: Calibre-Web over Kavita and Komga
+
+**Decision:** Calibre-Web.
+
+**Why:** the library is EPUB and PDF only, no comics or manga. Kavita's main differentiator (great comics / manga handling, OPDS-based progress sync to Kobo via KOReader) is wasted for a pure-prose library. Komga is comics-first and would feel awkward. Calibre-Web's reader, OPDS endpoint, and optional send-to-Kindle path are the right toolset for what's actually being read. The `DOCKER_MODS=linuxserver/mods:universal-calibre` add-on covers EPUB <-> MOBI conversion without needing the full Calibre desktop container.
+
+### Audiobookshelf is the only serious self-hosted option
+
+**Decision:** Audiobookshelf, with podcast library enabled in addition to audiobooks.
+
+**Why:** there is no realistic competitor in the self-hosted audiobook space. Booksonic and Subsonic-derived servers are music-first with poor audiobook UX. Audiobookshelf has the first-party iOS app, multi-user listening progress, and a maintained podcast catcher. Combining audiobooks and podcasts in one app avoids running a second service (Snapcast, AntennaPod-server, etc.) for what is conceptually the same access pattern.
+
+### Paperless-ngx for the document archive, with iPhone scan via Paperless Mobile
+
+**Decision:** Paperless-ngx in `cabinet/`. iPhone scanning via the third-party **Paperless Mobile** iOS app rather than a Samba / WebDAV folder + Genius Scan flow.
+
+**Why Paperless Mobile:** it uses Apple's VisionKit scanner under the hood, which is the same engine that Notes and Genius Scan use, so per-page scan quality is essentially identical to dedicated apps. The single-app workflow avoids running a Samba container (a non-trivial extra trust surface) and lets the uploader pick tag and correspondent at scan time, which a watched folder cannot.
+
+### Inbound mail: dedicated Porkbun-hosted mailbox, not Cloudflare Email Routing, not self-hosted SMTP
+
+**Decision:** purchase Porkbun Email Hosting ($24/year) for `jackalope.network` and create `receipts@jackalope.network` as a real IMAP mailbox. Paperless polls it directly. No Cloudflare Email Routing, no Mailgun, no self-hosted Postfix / Dovecot / Stalwart.
+
+**Why not self-hosted SMTP:** Tailscale Funnel is HTTPS-only and does not pass port 25. Most residential ISPs block inbound 25, and the deliverability tax of running a self-hosted MX from a residential IP (no reverse DNS control, IP-warming requirements, ongoing Gmail / Outlook reputation work) is wildly disproportionate to the value of one receive-only mailbox. Setup cost: 2-3 days plus ongoing operational burden, for no functional gain.
+
+**Why not Cloudflare Email Routing:** would require either moving DNS to Cloudflare (out of Porkbun) or maintaining a split DNS arrangement. The user is already a Porkbun customer with the rest of the DNS there. Cloudflare Email Routing forwards-only also means we'd still need a paid mailbox at Migadu / Fastmail / similar as the actual IMAP target. Two vendors for what one vendor (Porkbun) can do in a single product.
+
+**Why not Resend (initial user suggestion):** Resend is a transactional sending API. It does not host inbound mailboxes. Flagged the conflation and pivoted.
+
+**Result:** one vendor (Porkbun), one billing line, the mailbox `receipts@jackalope.network` is a real IMAP endpoint at `mail.porkbun.com`, paperless polls it, whitelist + auto-delete logic lives in paperless's mail rules. Setup is documented in `cabinet/README.md` under "Email ingestion."
+
+### Ebooks and audiobooks treated as Obsidian-class for backups
+
+**Decision:** include the full ebook library and the full spokenword library (audiobook files plus podcasts plus metadata) in restic snapshots at stage 2+, not just the application databases.
+
+**Why:** technically these are re-acquirable (re-download from Libro.fm, re-purchase, re-rip CDs), which would put them in the Jellyfin "skip backups" bucket. But the actual storage size is small relative to photos and video (tens of GB vs. hundreds), the B2 cost difference is rounding error, and the convenience of a one-shot restore vs. "restore metadata, then re-acquire everything" is high. Treating them as Obsidian-class (file-level backup, not just DB) for a small dollar cost is the right trade.
+
+### Portainer with the agent architecture from day one
+
+**Decision:** deploy Portainer CE plus its local agent (not Portainer talking directly to the Docker socket), even though there is only one host today.
+
+**Why:** the marginal complexity of the agent architecture is small, and it makes adding a second host (a Pi for off-site backups, a second SFF) a non-event: the second host runs only the agent and gets pointed at the existing Portainer. Tailnet-only access; never Funnel-exposed. The agent has Docker socket access, which is effectively root on the box, so the trust boundary is explicit in `portainer/README.md` and `docs/security-audit.md`.
+
+## 2026-05-31: Staged hardware rollout instead of one big buy
+
+**Decision:** introduce a three-stage lifecycle for the hardware build instead of jumping straight to the full RAID1-plus-backup design. Stage 1 is a used SFF office PC with internal disk only. Stage 2 adds one extra drive plus Backblaze B2. Stage 3 is the full mirror plus 3-2-1 backup design the existing docs describe. Full writeup in `docs/staged-rollout.md`.
+
+**Why:** the up-front commitment of the stage-3 design (used PC plus two NAS drives plus an external USB plus a B2 account) is several hundred dollars and a meaningful weekend of bootstrap work. That's too much to spend before the question "do I actually want to live with this product" is answered. Phasing lets the trial be cheap (under $250 one-time) and lets the spend track actual usage.
+
+**Load-bearing assumption for stage 1:** every data class on the box is a mirror of an upstream that still exists. Immich mirrors iCloud or Google Photos with the upstream service kept on. Obsidian LiveSync mirrors a vault still on the laptop and still backed up there. Matrix starts fresh and is being trialed, not relied on for history. Jellyfin media is re-rippable. If the stage-1 disk dies, the loss is annoyance, not data. This framing is what makes "no encryption, no backup" acceptable at stage 1 only.
+
+**Friends and family commitment:** invite-others happens at stage 3 only. The moment someone else's data is on the box, the redundancy and backup story of stage 3 is the minimum responsible posture. Stages 1 and 2 are solo.
+
+**B2 at stage 2:** turn on Backblaze B2 backup at stage 2 (not stage 3). Cost is $1 to $3 per month for tens of GB and the off-site copy is the cheapest insurance available. Stage 2 is 2-2-1 (no local USB target yet), stage 3 completes the 3-2-1 model.
+
+**Old laptop drives:** considered for stage-2 storage, rejected. Unknown remaining lifespan, not 24/7-rated, too small individually, and the user's own instinct was "don't trust them for irreplaceable data long term," which is correct. They have possible roles as scratch / Jellyfin re-rippable content / retirement; they are not the primary photos-and-notes drive.
+
 ## 2026-05-31: Temporary Netlify hosting for the welcome page
 
 **Decision:** while the home server hardware is being assembled, host the welcome page at `jackalope.network` from Netlify (GitHub-linked, builds the `welcome/` directory on push). Config in `netlify.toml` at the repo root.

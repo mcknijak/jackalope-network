@@ -10,9 +10,12 @@ secrets/
 id_rsa*
 id_ed25519*
 
-# Data (should never be in git, lives on the server under /mnt/data)
-data/
-volumes/
+# Server bind-mount safety: catch accidental /srv/<app>/data or
+# /srv/<app>/volumes directories. Root-anchored and scoped to one
+# level under /srv so this never matches source-code paths like
+# welcome/src/data/.
+/srv/*/data/
+/srv/*/volumes/
 
 # Editor / OS noise
 .DS_Store

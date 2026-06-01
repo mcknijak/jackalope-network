@@ -74,6 +74,29 @@ element.jackalope.network {
 	reverse_proxy element-web:80
 }
 
+# Ebooks: Calibre-Web (OPDS feed at /opds for iOS readers).
+shelf.jackalope.network {
+	reverse_proxy calibre-web:8083
+}
+
+# Audiobooks + podcasts: Audiobookshelf.
+spokenword.jackalope.network {
+	reverse_proxy audiobookshelf:80
+}
+
+# Document archive: Paperless-ngx.
+cabinet.jackalope.network {
+	reverse_proxy paperless:8000
+}
+
+# Container management UI: Portainer CE.
+# Tailnet-only, never on Funnel. The Portainer agent has access to the
+# Docker socket, so the auth boundary here is effectively "root on the box."
+# See portainer/README.md for the full trust-boundary rationale.
+portainer.jackalope.network {
+	reverse_proxy portainer:9000
+}
+
 # ── Public photo sharing ─────────────────────────────────────────────────────
 # Public photo sharing arrives via Tailscale Funnel. Funnel does TCP
 # passthrough to local 443, so Caddy still terminates TLS with its

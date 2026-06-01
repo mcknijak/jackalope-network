@@ -1,0 +1,20 @@
+name: spokenword
+
+services:
+  audiobookshelf:
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    container_name: audiobookshelf
+    restart: unless-stopped
+    environment:
+      - TZ=America/New_York
+    volumes:
+      - /mnt/data/spokenword/audiobooks:/audiobooks
+      - /mnt/data/spokenword/podcasts:/podcasts
+      - /mnt/data/spokenword/metadata:/metadata
+      - /mnt/data/spokenword/config:/config
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

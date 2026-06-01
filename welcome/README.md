@@ -7,7 +7,7 @@ The page mirrors the visual language of the portfolio at `jackmcknight.dev` so t
 ## What it does
 
 - Hero block with a short bio in the same Tokyo Night palette and FiraCode type as the portfolio.
-- Tile grid for each self-hosted app (Immich, Jellyfin, Obsidian/CouchDB, Matrix).
+- Tile grid for each user-facing self-hosted app (Immich, Jellyfin, Obsidian/CouchDB, Matrix, Calibre-Web, Audiobookshelf, Paperless-ngx). Operator-only services (Portainer) are deliberately not listed here.
 - Each tile is a link to its app's tailnet-only subdomain.
 - On first load, a client-side probe checks whether the browser can reach a tailnet-only endpoint (`probe.jackalope.network/ok`). Two outcomes:
   - **On the tailnet:** tiles are fully colored and clickable, banner says "All apps are live."

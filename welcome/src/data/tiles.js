@@ -34,6 +34,34 @@ export const tiles = [
     icon: '/icons/element.svg',
     color: '#0DBD8B',
   },
+  {
+    id: 'ebooks',
+    app: 'Calibre-Web',
+    role: 'Ebooks',
+    href: 'https://shelf.jackalope.network',
+    icon: '/icons/calibre-web.svg',
+    color: '#B91C1C',
+  },
+  {
+    id: 'spokenword',
+    app: 'Audiobookshelf',
+    role: 'Audiobooks + Podcasts',
+    href: 'https://spokenword.jackalope.network',
+    icon: '/icons/audiobookshelf.svg',
+    color: '#F59E0B',
+  },
+  {
+    id: 'cabinet',
+    app: 'Paperless',
+    role: 'Documents',
+    href: 'https://cabinet.jackalope.network',
+    icon: '/icons/paperless.svg',
+    color: '#15803D',
+  },
+  // Portainer is intentionally not listed here. It is an operator-only
+  // surface (Docker socket access = root on the box) and is not meant
+  // to be shared. Reachable at portainer.jackalope.network for admins
+  // on the tailnet who already know it exists.
 ];
 
 export const brand = {
@@ -41,7 +69,7 @@ export const brand = {
   domain: 'jackalope.network',
   tagline: 'A small set of services, self-hosted at home.',
   bio: [
-    `Everything here runs on one box in my apartment. Photos, video, notes, and chat, all behind Tailscale, all owned and operated rather than rented.`,
+    `Everything here runs on one box in my apartment. Photos, video, notes, chat, ebooks, audiobooks, and a document archive, all behind Tailscale and all owned rather than rented.`,
     `The code, the runbook, and the security audit live in the repo below.`,
   ],
   repo: 'https://github.com/mcknijak/homelab-server',

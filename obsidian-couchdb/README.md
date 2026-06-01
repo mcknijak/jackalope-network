@@ -31,5 +31,5 @@ On the first device, initialize the remote database from the plugin's "Remote Da
 ## Notes
 
 - The CouchDB admin user (set via `COUCHDB_USER`) is the only user that can write to the database. You can create separate, lower-privileged users in CouchDB if multiple people share the vault, but for personal use one admin is fine.
-- Backups: CouchDB stores data under `/mnt/data/couchdb/data`, which is picked up by the nightly restic run. To restore, drop the contents back into that directory before CouchDB starts.
+- Backups: CouchDB stores data under `/mnt/data/couchdb/data`, which is picked up by restic at stages 2 (weekly to B2) and 3 (nightly to USB and weekly to B2). At stage 1 there is no backup; the canonical Obsidian vault on the laptop is the source of truth and CouchDB is the sync target. To restore, drop the snapshot contents back into the data directory before CouchDB starts.
 - The vault itself is still local-first; CouchDB is only a sync target. If CouchDB is down, the Obsidian client keeps working and re-syncs when it comes back.
