@@ -40,6 +40,16 @@
   border-radius: 20px;
   overflow: hidden;
   width: fit-content;
+  box-shadow:
+    0 0 40px rgba(122, 162, 247, 0.2),
+    0 0 80px rgba(187, 154, 247, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.logoWrap:hover {
+  box-shadow:
+    0 0 50px rgba(187, 154, 247, 0.35),
+    0 0 100px rgba(122, 162, 247, 0.15);
 }
 
 .logo {

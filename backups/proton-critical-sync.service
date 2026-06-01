@@ -1,0 +1,10 @@
+[Unit]
+Description=Weekly supplementary critical-data sync to Proton Drive
+After=network-online.target
+
+[Service]
+Type=oneshot
+Nice=15
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+ExecStart=/usr/local/sbin/proton-critical-sync.sh

@@ -2,6 +2,22 @@
 
 Running log of architecture decisions and the reasoning behind them. Newest entries at the top.
 
+## 2026-06-01: Backblaze B2 stays as the stage-3 offsite; Proton Drive is supplementary only
+
+**Decision:** the stage-3 offsite restic repository stays on Backblaze B2. An existing Proton Drive subscription is used for an optional, supplementary `rclone copy` of a hand-curated critical-data set, scheduled via `backups/proton-critical-sync.{sh,service,timer}`. Proton Drive does **not** replace B2 in the 3-2-1 plan.
+
+**Why not Proton Drive as the primary offsite:**
+
+- The rclone Proton Drive backend is in beta and explicitly flags write operations as not fully supported.
+- Proton actively rate-limits and has, in the past, intermittently blocked rclone API access (multi-week September 2024 outage with no clear remediation). A backup destination needs to be the most boring layer in the stack; an unreliable one defeats the purpose of having an offsite at all.
+- restic-via-rclone adds a second tool to the failure surface of the one job that must work the day everything else has already failed.
+- Storage ceiling is fine for the dataset in scope (Proton plans top out at 500 GB to 1 TB; the offsite restic dataset is roughly 5 to 50 GB) but Proton's throttling makes even small repos slow and fragile.
+- B2 is roughly $1 to $5/month for the dataset in scope. Proton "saves" that amount in exchange for putting the disaster-recovery copy behind a beta backend.
+
+**Why use Proton Drive at all, then:** the user already pays for it, so adding a tertiary, low-cost backup of the most irreplaceable files (CouchDB / Obsidian, Paperless exports, `/srv`) costs nothing extra and gives a fully tool-independent recovery path. Worst-case restore is "log into Proton Drive in a browser and download the folder." No restic, no rclone needed for restore.
+
+**How to apply:** B2 stays as the stage-2 + stage-3 restic offsite (no change to `restic-backup.sh` or its timers). Proton sync is opt-in, lives in `backups/proton-critical-sync.{sh,service,timer}`, and is documented in `backups/README.md` under "Optional: supplementary Proton Drive sync." If Proton ever ships an official restic-compatible API or rclone exits beta with a clean stability record, revisit this decision.
+
 ## 2026-06-01: OS pin: Debian 13 (Trixie), not Debian 12 (Bookworm)
 
 **Decision:** new installs of the homelab box use Debian 13 (Trixie, currently at point release 13.5). Bookworm is fine for existing installs but not the right starting point for a fresh build in mid-2026.

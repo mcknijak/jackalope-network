@@ -1,0 +1,13 @@
+[Unit]
+Description=Run proton-critical-sync weekly
+
+[Timer]
+# Saturday at 03:15 UTC. Offset from the B2 run (Sunday 04:30) so the two
+# don't compete for upstream bandwidth, and after midnight local in most US
+# timezones to avoid peak-hours Proton API contention.
+OnCalendar=Sat *-*-* 03:15:00
+Persistent=true
+RandomizedDelaySec=1h
+
+[Install]
+WantedBy=timers.target

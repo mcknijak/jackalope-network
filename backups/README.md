@@ -90,6 +90,44 @@ sudo -E bash -c 'set -a; source /etc/restic.env; set +a; \
   RESTIC_REPOSITORY="$RESTIC_REPOSITORY_USB" restic snapshots'
 ```
 
+## Optional: supplementary Proton Drive sync
+
+If you already pay for Proton Drive (Mail Plus, Drive Plus, Unlimited) you can run a *third*, supplementary backup of a hand-curated set of critical files. This is **not** a replacement for B2. The rclone Proton Drive backend is in beta, Proton actively rate-limits and occasionally blocks rclone API access, and you don't want any of that in the path of a real disaster recovery. The role of this job is "if B2, the USB, and restic itself are all somehow unreachable, what's the smallest set of files I'd need to rebuild from?"
+
+Curated set (see `proton-critical-sync.sh`): the CouchDB data dir (Obsidian notes), the Paperless export dir if you set up `document_exporter`, and `/srv` (compose files, env files, Caddyfile, the cloned repo with all bootstrap scripts and docs). Media files are deliberately out of scope: Proton's quotas and throttling make a media sync a bad fit.
+
+Install (only if you want it):
+
+```bash
+# 1. Install rclone and configure the Proton remote
+sudo apt install rclone
+sudo rclone config
+#   - n (new remote)
+#   - name: proton
+#   - storage: protondrive
+#   - sign in with your Proton credentials and 2FA token
+#   The config lands at /root/.config/rclone/rclone.conf since the
+#   sync script runs as root via systemd.
+
+# 2. Create the target folder in Proton Drive (via the web UI)
+#    Default path the script expects: /HomelabCritical/
+
+# 3. Install the script and systemd units
+sudo cp proton-critical-sync.sh /usr/local/sbin/proton-critical-sync.sh
+sudo chmod 750 /usr/local/sbin/proton-critical-sync.sh
+sudo chown root:root /usr/local/sbin/proton-critical-sync.sh
+sudo cp proton-critical-sync.service proton-critical-sync.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now proton-critical-sync.timer
+
+# 4. Smoke test
+sudo /usr/local/sbin/proton-critical-sync.sh
+```
+
+Verify in the Proton Drive web UI: a folder named `HomelabCritical/<UTC-timestamp>/` should appear with `mnt/`, `srv/` subtrees. Restore is "log in, browse, download," no special tooling required.
+
+Retention: the script keeps the last 8 weekly snapshots and purges older ones. Adjust `KEEP` at the top of the script if you want more or less.
+
 ## Restore a file (do this quarterly to confirm backups work)
 
 ```bash
